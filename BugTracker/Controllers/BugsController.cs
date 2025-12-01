@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BugTracker.Data;
 using BugTracker.Models;
+using BugTracker.Services;
+using BugTracker.DTOs;
 
 namespace BugTracker.Controllers
 {
@@ -14,25 +10,26 @@ namespace BugTracker.Controllers
     [ApiController]
     public class BugsController : ControllerBase
     {
-        private readonly BugContext _context;
+        private readonly IBugService _bugService;
 
-        public BugsController(BugContext context)
+        public BugsController(IBugService bugService)
         {
-            _context = context;
+            _bugService = bugService;
         }
 
         // GET: api/Bugs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Bug>>> GetBugs()
+        public async Task<ActionResult<IEnumerable<BugReadDto>>> GetBugs()
         {
-            return await _context.Bugs.ToListAsync();
+            var bugs = await _bugService.GetAllBugsAsync();
+            return Ok(bugs);
         }
 
         // GET: api/Bugs/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Bug>> GetBug(int id)
+        public async Task<ActionResult<BugReadDto>> GetBug(int id)
         {
-            var bug = await _context.Bugs.FindAsync(id);
+            var bug = await _bugService.GetBugByIdAsync(id);
 
             if (bug == null)
             {
@@ -45,64 +42,41 @@ namespace BugTracker.Controllers
         // PUT: api/Bugs/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBug(int id, Bug bug)
+        public async Task<IActionResult> PutBug(int id, BugUpdateDto dto)
         {
-            if (id != bug.Id)
+            var updatedBug = await _bugService.UpdateBugAsync(id, dto);
+            if (updatedBug == null)
             {
-                return BadRequest();
+                return NotFound();
             }
-
-            _context.Entry(bug).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BugExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
             return NoContent();
         }
 
         // POST: api/Bugs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Bug>> PostBug(Bug bug)
+        public async Task<ActionResult<Bug>> PostBug(BugCreateDto dto)
         {
-            _context.Bugs.Add(bug);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetBug", new { id = bug.Id }, bug);
+            var createdBug = await _bugService.CreateBugAsync(dto);
+            return CreatedAtAction("GetBug", new { id = createdBug.Id }, createdBug);
         }
 
         // DELETE: api/Bugs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBug(int id)
         {
-            var bug = await _context.Bugs.FindAsync(id);
-            if (bug == null)
+            var success = await _bugService.DeleteBugAsync(id);
+            if (!success)
             {
                 return NotFound();
             }
-
-            _context.Bugs.Remove(bug);
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
         private bool BugExists(int id)
         {
-            return _context.Bugs.Any(e => e.Id == id);
+            var bug = _bugService.GetBugByIdAsync(id).Result;
+            return bug != null;
         }
     }
 }
