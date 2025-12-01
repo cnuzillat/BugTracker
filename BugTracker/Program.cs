@@ -10,6 +10,7 @@ builder.Services.AddDbContext<BugContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<BugTracker.Services.IBugService, BugTracker.Services.BugService>();
 
 var app = builder.Build();
 
