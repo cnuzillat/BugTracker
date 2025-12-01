@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BugTracker.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace BugTracker.DTOs
 {
@@ -10,7 +11,9 @@ namespace BugTracker.DTOs
 
         public string? Description { get; set; }
 
-        public string? Status { get; set; }
+        public BugStatus? Status { get; set; }
+
+        public BugPriority? Priority { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }
