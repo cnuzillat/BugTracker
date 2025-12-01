@@ -23,6 +23,7 @@ namespace BugTracker.Services
                     Title = b.Title,
                     Description = b.Description,
                     Status = b.Status,
+                    Priority = b.Priority,
                     CreatedAt = b.CreatedAt
                 })
                 .ToListAsync();
