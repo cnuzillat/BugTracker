@@ -19,9 +19,9 @@ namespace BugTracker.Controllers
 
         // GET: api/Bugs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BugReadDto>>> GetBugs()
+        public async Task<ActionResult<IEnumerable<BugReadDto>>> GetBugs(string? status, string? priority, string? search, string? sort, int page = 1, int pageSize = 20)
         {
-            var bugs = await _bugService.GetAllBugsAsync();
+            var bugs = await _bugService.GetAllBugsAsync(status, priority, search, sort, page, pageSize);
             return Ok(bugs);
         }
 
